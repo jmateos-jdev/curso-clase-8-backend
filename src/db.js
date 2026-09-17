@@ -11,13 +11,23 @@ function readEnv(name, fallback = '') {
   return env[name] ?? process.env[name] ?? fallback
 }
 
-export const pool = mysql.createPool({
-  host: readEnv('DB_HOST', 'localhost'),
-  port: Number(readEnv('DB_PORT', '3306')),
+const socketPath = readEnv('INSTANCE_UNIX_SOCKET') || readEnv('DB_SOCKET')
+
+const baseConfig = {
   user: readEnv('DB_USER', 'root'),
   password: readEnv('DB_PASSWORD', ''),
   database: readEnv('DB_NAME', 'curso_clase_8'),
-  ssl: { rejectUnauthorized: false },
   waitForConnections: true,
   connectionLimit: 10,
-})
+}
+
+export const pool = mysql.createPool(
+  socketPath
+    ? { ...baseConfig, socketPath }
+    : {
+        ...baseConfig,
+        host: readEnv('DB_HOST', 'localhost'),
+        port: Number(readEnv('DB_PORT', '3306')),
+        ssl: { rejectUnauthorized: false },
+      },
+)
