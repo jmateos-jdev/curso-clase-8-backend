@@ -46,6 +46,29 @@ app.post('/api/contador', async (req, res) => {
   }
 })
 
+app.delete('/api/contador/:id', async (req, res) => {
+  try {
+    const id = Number(req.params.id)
+
+    if (!Number.isInteger(id) || id <= 0) {
+      return res.status(400).json({
+        error: 'El ID debe ser un entero positivo',
+      })
+    }
+
+    const [result] = await pool.query('DELETE FROM contador WHERE ID = ?', [id])
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: 'Registro no encontrado' })
+    }
+
+    res.status(200).json({ id })
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ error: 'Error al eliminar el registro' })
+  }
+})
+
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Servidor escuchando en el puerto ${PORT}`)
 })
